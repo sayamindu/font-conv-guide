@@ -1,0 +1,1963 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet href="docbook-css-0.4/driver.css" type="text/css"?>
+
+
+<book>
+<bookinfo>
+	<title>
+	Converting a legacy ASCII based Indic font to an Unicode compliant Open Type Font
+	</title>
+	<authorgroup>
+		<author>
+			<firstname>Sayamindu</firstname> <surname>Dasgupta</surname>
+			<affiliation>
+				<address><email>unmadindu@bengalinux.org</email></address>
+				<orgname>Ankur Bangla Group</orgname>
+			</affiliation>
+		</author>
+	</authorgroup>
+
+	<edition>
+	Converting a legacy ASCII based Indic font to an Unicode compliant Open Type Font, version 0.01
+	</edition>
+
+			
+	<copyright>
+		<year>2004 </year>
+		<year>2005</year>
+		<holder>
+			Sayamindu Dasgupta
+		</holder>
+	</copyright>
+		<legalnotice>
+		<para>
+		Permission is granted to copy, distribute and/or modify this document 
+		under the terms of the GNU Free Documentation License, Version 1.1 or 
+		any later version published by the Free Software Foundation; with no 
+		Invariant Sections, with no Front-Cover Texts , and with no Back-Cover 
+		Texts . A copy of the license is included in Appendix B entitled 
+		"GNU Free Documentation License".
+		</para>
+		<para>
+		All copyrights are held by their respective owners, unless specifically 
+		noted otherwise. Use of a term in this document should not be regarded 
+		as affecting the validity of any trademark or service mark.
+		</para>
+		</legalnotice>
+		<subjectset>
+			<subject><subjectterm>Fonts</subjectterm></subject>
+			<subject><subjectterm>Typography</subjectterm></subject>
+			<subject><subjectterm>Localization</subjectterm></subject>
+		</subjectset>
+	</bookinfo>
+
+	<preface id="preface">
+		<title>Foreword</title>
+		<para>
+		Traditionally, computers have been designed with the assumption that
+		English will be the language (or at least, Latin will be the script) in
+		which users will communicate with the system. Only in recent years, we
+		have seen a number of regional teams springing up in all corners of
+		India and her neighbouring countries, each team wanting to "localise"
+		computer software and interfaces for their own languages and cultures.
+		Free Software has become a natural choice for these teams, since it
+		gives them the power and (legal) right to modify the software so as to 
+		suit their own language and cultural nuances.
+		</para>
+		<para>
+		However, documentation regarding the process of localisation is
+		extremely sparse, and since the nature of localisation requires a
+		considerable amount of cross-domain knowledge, things are made all the
+		more difficult. The first major stumbling block that a localisation team
+		usually faces is when they try to come up with a font. Localisation of
+		GNU/Linux into an Indic "locale" in a standards compliant way requires a
+		"special" kind of font, called an Open Type Font. The technology used in
+		an Open Type Font is comparatively new, and naturally, documentation is
+		sparse. The only significant piece of documentation that deals with the
+		process of creating Open Type Fonts for Indic languages is specific to a
+		certain proprietary tool running on a certain proprietary platform. This 
+		document tries to outline the process of converting legacy Indic fonts 
+		into Open Type fonts, using a Free Software tool called FontForge (formerly 
+		called pfaedit). 
+		</para>
+		<para>
+		However, before someone embarks on a mission of making/converting an
+		Open Type font, he/she must also be familiar with at least the basics of
+		Unicode and typography. So the document also contains a basic level
+		introduction to Unicode and typography. Moreover, accompanying the
+		document are two fonts (one for the Bangla script and another for
+		the Devanagari script), which should serve as examples. 
+		</para>
+		<para>
+		Also, a few video clips, illustrating the basic operations in fontforge
+		(importing/exporting fonts, adding OpenType tables, etc) are also 
+		included with the document.
+		</para>
+		<para>
+		The document is Free (as in Free Speech), and is licensed under the GNU 
+		Free Documentation License (<acronym>GFDL</acronym>). Permission is 
+		granted to copy, distribute and/or modify this document under the terms of 
+		the GNU Free Documentation License, Version 1.1 or any later version 
+		published by the Free Software Foundation; with no Invariant Sections, 
+		with no Front-Cover Texts, and with no Back-Cover Texts. A copy of the 
+		license is located at <ulink url="http://www.gnu.org/licenses/fdl.html">
+		http://www.gnu.org/licences/fdl.html</ulink>.
+		</para>
+		<para>
+		The author would like to thank Sarai/CSDS for granting him the fellowship 
+		to work on the document. He is also grateful to the entire Indic computing 
+		computing community, especially the members of Ankur and the Free Bangla 
+		Fonts projects, who have been enthusiastically working for the sake of 
+		their own culture and language at the time when they should have been 
+		studying or sleeping.
+		</para>
+	</preface>
+
+	<chapter id="intro">
+		<title>Introduction - The Basics</title>
+		<para>
+		In this introductory chapter, I will be explaining (in brief) how a 
+		computer handles characters. This chapter deals with the concepts 
+		behind text encoding, codepages and the need for having a standardised 
+		text encoding system. However, please do always keep in mind that this 
+		is a very superficial treatment of the subject, just enough to get you 
+		started with minimal confusion. If you are interested in getting deep 
+		into subject, please look at the links I have provided at the end of this
+		document. 
+		</para>
+		<sect1 id="intro.texthandling">
+			<title>Text Handling - Inside a Computer</title>
+			<para>
+			Computers are stupid. They do not understand anything other than 
+			numbers. And when I say numbers, these are not the numbers that 
+			you and I use everyday. They only recognise numbers which look 
+			like 110010101, 10010111, etc. This is not very surprising, 
+			since computers were originally designed to process (or as we 
+			techies sometimes say, crunch) calculations involving extremely 
+			large numbers, which no sane human being was willing to do (always 
+			remember - lazyness is the mother of invention). Earliest 
+			computers had very little to do with text, and so as a result, 
+			even today, the computer understands nothing but numbers. And 
+			since the components of a computer ran on electricity, it was 
+			easier to handle information in terms of "On" or "Off" states, 
+			"On" represented "1" and Off represented "0". So internally, 
+			computers handled numbers as sequences of 1's and 0's, using 
+			the <firstterm>binary number system</firstterm>. Such a unit of 
+			information, which can be in either a state of "0" or "1" is called 
+			a <firstterm>bit</firstterm>.
+			</para>
+			<para>
+			By now, you must be thinking - but how on earth do I do all those 
+			word processing and emailing in my computer ?? Well, as the 
+			computing age advanced, computer scientists devised a very clever 
+			way to handle text. They simply assigned an unique number to each 
+			and every alphabet in their script (which was - no prizes for 
+			guessing this correctly, Latin). So after this, when you told the 
+			computer - "Hey, I am giving you some textual data", and if you 
+			entered the number, say 64, the computer stored it internally as 
+			64, but displayed it to you as the character "A". Similarly, 
+			65 stood for "B", 66 for "C" and so on. Moreover, there were some 
+			special characters called "Control Characters" signifying space, 
+			carriage return, tab, etc  which instructed the computer to do 
+			<emphasis>visual</emphasis> adjustments to the displayed text.
+			This entire system of character to number mapping was called 
+			<firstterm>encoding</firstterm>.
+			</para>
+		<sect2 id="intro.texthandling.ascii">
+			<title>ASCII</title>
+			<para>
+			At first, there was no standardised way of assigning numbers to 
+			the characters, and almost each and computer came with its own 
+			system of character-number mapping. However, when people started 
+			transferring data between computers they realised that they had 
+			to have a standardised way of representing characters, and thus 
+			they came up with a system which mapped the basic Latin characters, 
+			punctuations and control characters to the numbers ranging from 
+			0-127. At the time this system was introduced, computers used eight
+			group of bits as their smallest unit of information. However, the bit 
+			at the eight'th position was usually used for error checking, and hence, 
+			people could use only the first seven bits for any useful purpose (forgive 
+			the pun). The maximum number of unique things that you can represent with 
+			seven bits (each of which could be either zero or one) is 2<superscript>7</superscript>, 
+			ie, 128, and hence, we come across the 128 characters limit. 
+			This was called <acronym>ASCII</acronym>,
+			which is an acronym for "American Standard Code for Information 
+			Interchange". ASCII was formally introduced as a standard in 
+			1963, and is probably one of the most successful software standards 
+			to be ever released. Another quite successful (at that time) encoding standard 
+			was <acronym>EBCDIC></acronym> which stands for Extended Binary Coded Decimal 
+			Interchange Code. This was brought forward by IBM, and was mainly used in IBM 
+			mainframes.			
+			</para>
+			<para>
+			However, ASCII (and EBCDIC) could only handle the base Latin characters (and maybe 
+			a few more for German and French) - ie. you could only handle plain and simple English (and 
+			a few other west European languages) with it. But, by this time 
+			computers had spread all over the world, and people wanted to use the 
+			systems in their own language. So they extended the 128 character limit 
+			of ASCII to 256, and used the members of the last 127 number block 
+			(128-255) to represent the extra characters that they needed. This was the 
+			general practise in European countries, while in countries from East 
+			Asia, they started to use even more fancier methods to do their encoding 
+			(since their character count ran to thousands). However, the net result 
+			of all this was that every country had a different <firstterm>codepage</firstterm>
+			of their own, and computers used in those countries usually shipped 
+			with only that codepage enabled. That mean't that you couldn't read a 
+			Hebrew text file in a computer bought in Greece.
+			</para>
+		</sect2>
+		<sect2 id="intro.texthandling.unicode">
+			<title>Unicode</title>
+			<para>
+			To resolve this confusion - in the late eighties, some people decided to 
+			have a single Grand Unified standard called... (drums and trumpets please) 
+			<emphasis>Unicode</emphasis>. The broad (and very ambitous) aim of Unicode 
+			is to assign an <emphasis>unique</emphasis> number to each and every character of 
+			each and every "reasonable" writing system used on the earth, <quote>no matter what 
+			the platform, no matter what the program, not matter what the language</quote>. Apart 
+			from characters, Unicode also assigns numbers to various symbols and signs, like 
+			the various mathematical signs, the symbols used in musical notations, etc.
+			However, before you jump to conclusions, let me very clearly state, that 
+			Unicode is not a "16-bit" encoding system, with each character taking up 
+			sixteen bits of storage space. Unicode simply assigns numbers to characters - 
+			and how those numbers are represented inside computers is a completely 
+			different story (where you would come accross weird characters called 
+			UTF-8, UTF-16, UCS4). As a font developer, you need not worry much about 
+			methods of representing Unicode - but if you are interested, you can look 
+			at <ulink url="http://www.joelonsoftware.com/articles/Unicode.html">this</ulink> 
+			article by Joel Splosky, or if you are of the more techie kind, you may want 
+			to read <ulink url="http://www-106.ibm.com/developerworks/library/utfencodingforms/">
+			this</ulink> article at the IBM website.
+			</para>
+			<para>
+			At the time of writing, the latest version of the Unicode standard (version 4.1) 
+			can handle the following Indic scripts (note that I mention script here - not 
+			language. Always remember that Unicode encodes scripts, not languages):
+			</para>
+			<itemizedlist mark='opencircle'>
+				<listitem>
+					<para>
+					Devanagari
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+					Bengali
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+					Gurmukhi
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+					Gujarati
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+					Oriya
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+					Tamil
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+					Telegu
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+					Kannada
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+					Malayalam
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+					Sinhala
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+					Thai
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+					Lao
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+					Tibetan
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+					Myanmar
+					</para>
+				</listitem>
+			</itemizedlist>
+			<para>
+			Other scripts such as Ol-Chiki/Al-Chiki (used for Santhali) and Shyloti Nagri (used in 
+			the northern portions of Bangladesh) are in the pipeline and maybe added in the next 
+			major revision of Unicode.
+			</para>
+			<para>
+			However, if you go through the code charts for the various scripts, you will notice 
+			that Unicode only assigns numbers to the <emphasis>base</emphasis> characters of a 
+			particular script. <!-- Maybe mention graphemes here ?? --> That means displaying of 
+			conjuncts (sanyuktakshars/yuktakshars) and other combined characaters is something 
+			which the software and the font should do. Though this may seem to be weird at the 
+			first glance, in reality, it adds a lot of flexibility and freedom to the software 
+			developer and as well as the typographer. Of course, there is a bit more complexity 
+			as far as the software and the font is concerned, but the end product is vastly 
+			superior to what people have been using for all these years, offering much more 
+			freedom and flexibility.
+			<!-- Rephrase and expand -->
+			</para>			
+		</sect2>
+		</sect1>
+		<sect1 id="intro.fonts">
+			<title>Fonts (for computers)</title>
+			<para>
+			Around a hundred years ago, a font was a collection of metal blocks on which characters 
+			(or rather, glyphs) were engraved. Today, when we speak of computer fonts, we signify 
+			characters represented by shapes stored inside the computer's memory. A character, say 
+			"a" is basically an abstract entity. Inside a computer, it is represented by certain 
+			shapes called glyphs (which normal users usually call "letters"). Always keep in mind 
+			that a character can have multiple kinds of glyphs - for example, "A" can be represented 
+			by the following glyphs:
+			<figure>
+			<title>Different glyphs for a single character</title> 
+				<mediaobject>
+					<imageobject>
+						<imagedata fileref="images/EPS/a_glyphs.eps" format="EPS"/>
+					</imageobject> 
+					<imageobject>
+						<imagedata fileref="images/JPG/a_glyphs.jpg" format="JPG"/>
+					</imageobject> 
+					<textobject>
+						<phrase>Different glyphs for a single character</phrase>
+					</textobject> 
+					<caption>
+						<para>Different glyphs for a single character "A".</para>
+					</caption>
+				</mediaobject>
+			</figure> 			
+			Moreover, glyphs can also represent multiple characters at a time, ie, a glyph can
+			be composed of two (or more) glyphs. For example, in latin, we often come accross 
+			the a slightly different looking combination of "f" and "i", as displayed below:
+			<figure>
+			<title>The "fi" ligature</title> 
+				<mediaobject>
+					<imageobject>
+						<imagedata fileref="images/EPS/fi_glyphs.eps" format="EPS"/>
+					</imageobject> 
+					<imageobject>
+						<imagedata fileref="images/JPG/fi_glyphs.jpg" format="JPG"/>
+					</imageobject> 
+					<textobject>
+						<phrase>The "fi" ligature</phrase>
+					</textobject> 
+					<caption>
+						<para>"f" and "i" combine to form the "fi" ligature.</para>
+					</caption>
+				</mediaobject>
+			</figure> 			
+			Fonts usually come in three varieties. The simplest one is called <firstterm>Bitmapped Font
+			</firstterm> which basically contain all the glyphs as small pictures within the font file. This 
+			usually gives us the best quality fonts, but the size of this type of font is quite 
+			high, and moreover, these fonts usually look good at a particular size. 
+			<firstterm>Stroked Fonts</firstterm>, on the other hand, represents each and every glyph as a set 
+			of <firstterm>stems</firstterm>, with the font storing only the lines passing through the center 
+			of each stem. During on screen or on paper rendering (drawing), the font is drawn using a fixed 
+			width "pen" along each line. This does not result in very good quality, but the benefits as 
+			far as file-size in concerned are quite high. <firstterm>Outline Fonts</firstterm>, are kind of 
+			<emphasis>in between</emphasis> bitmapped fonts and stroked fonts. Outline fonts represent 
+			glyphs as <firstterm>contours</firstterm>. In terms of file size and visual quality, these fonts 
+			fall in between the other two categories. However, rendering of these of fonts can be quite 
+			resource intensive.
+			</para>
+			<para>
+			When a computer encounters some text, it moves through the text character by character (or 
+			rather code point by code point). As soon as it encounters a code point, it looks up that 
+			point in the currently active font, extracts the glyph mapped to that point, and renders 
+			it on screen. This is the usual process in the latin land. However, as soon as you start 
+			to process Indic (or maybe Arabic or any one of the far Eastern scripts), things become 
+			slightly more complicated. This happens because in Indic (and many of the non latin) scripts, 
+			character/codepoint to glyph relation is not always one is to one. For example, theDevanagri   
+			conjunct ksha is composed of three codepoints, as shown below:
+			<figure>
+			<title>The Devanagri conjunct kshha</title> 
+				<mediaobject>
+					<imageobject>
+						<imagedata fileref="images/EPS/hi_ka_sha.eps" format="EPS"/>
+					</imageobject> 
+					<imageobject>
+						<imagedata fileref="images/JPG/hi_ka_sha.jpg" format="JPG"/>
+					</imageobject> 
+					<textobject>
+						<phrase>The Devanagri conjunct kshha</phrase>
+					</textobject> 
+					<caption>
+						<para>Formation of the Devanagri conjunct kshha</para>
+					</caption>
+				</mediaobject>
+			</figure> 			
+			This kind of "substituting" information can be embedded into a special kind of font - called 
+			"Open Type" font (or in short - <acronym>OTF</acronym>). Open Type fonts have tables inside 
+			them, which are used to store these substitution information. The tables are called GSUB 
+			tables (SUB standing for substitution). Another Open Type table which a typical Indic 
+			font (especially the high quality ones) extensive use is the GPOS table which is used for 
+			postitioning the various <foreignphrase>matras</foreignphrase> and <foreignphrase>bindis
+			</foreignphrase>. For example:
+			<figure>
+			<title>Positioning of ukaar on ka (Bengali)</title> 
+				<mediaobject>
+					<imageobject>
+						<imagedata fileref="images/EPS/bn_ka_ukaar.eps" format="EPS"/>
+					</imageobject> 
+					<imageobject>
+						<imagedata fileref="images/JPG/bn_ka_ukaar.jpg" format="JPG"/>
+					</imageobject> 
+					<textobject>
+						<phrase>Positioning of ukaar on ka (Bengali)</phrase>
+					</textobject> 
+					<caption>
+						<para>Positioning of ukaar on ka (Bengali) with GPOS tables</para>
+					</caption>
+				</mediaobject>
+			</figure> 			
+			</para>
+			<para>
+			It may be worthwhile to point out here that the glyphs for the various conjuncts, which are 
+			essentially composed of two or more glyphs are often called "ligatures". 
+			</para>
+			<para>
+			However, when you work on Open Type fonts, always remember that Open Type fonts alone 
+			cannot do the magic. The software which actually does the heavy duty lifting of 
+			drawing the actual glyphs on screen (or on paper) based on the text in the computers 
+			memory also needs to "understand", or as we often put it, "support" Open Type tables. 
+			This software (which is often referred to as the <firstterm>rendering engine</firstterm>) is 
+			usually the same across a given desktop (or, even operating system). Some special purpose 
+			applications use their own rendering engine - a very commonly used example would be 
+			<ulink url="http://www.yudit.org">Yudit</ulink>, which is often used in older 
+			systems (which do not have native Open Type support) to deal with non Latin text.
+			In the Free Software world - GNOME (or to be more precise, GTK) based applications 
+			use the <ulink url="http://www.pango.org">Pango</ulink> as their rendering engines 
+			(a notable exception being the AbiWord word processor). KDE based applications 
+			use the renderer that comes with the QT <acronym>GUI</acronym> toolkit. In M$Windows, 
+			usually the Uniscribe engine and some associated stuff is used.
+			</para>			
+			</sect1>
+			<sect1>
+			<title>The special features of Indic scripts</title>
+			<para>
+			In this section, I will attempt to explain what makes Indic scripts "different", and 
+			what makes them so difficult to use as far as computers (especially text processing) 
+			is concerned.
+			</para>
+			<para>
+			<!--FIXME - should I divide stuff into subsections ?? -->
+			When a computer deals with Latin scripts, things are simple and linear. When A occurs after 
+			B (at the storage level), the computer knows that it has to display the glyphs in the same 
+			order,  ie, A after B. When we come to Indic scripts however, if the "i" matra-sign comes
+			after the consonant "ka" (in the storage level), the computer has to render the vowel 
+			sign <emphasis>before</emphasis> the consonant.
+			<figure>
+			<title>Reordering of ekaar on ka (Bengali)</title> 
+				<mediaobject>
+					<imageobject>
+						<imagedata fileref="images/EPS/bn_ka_ekaar.eps" format="EPS"/>
+					</imageobject> 
+					<imageobject>
+						<imagedata fileref="images/JPG/bn_ka_ekaar.jpg" format="JPG"/>
+					</imageobject> 
+					<textobject>
+						<phrase>Reordering of ekaar on ka (Bengali)</phrase>
+					</textobject> 
+					<caption>
+						<para>Visual reordering of ka ekaar to ekaar ka (Bengali)</para>
+					</caption>
+				</mediaobject>
+			</figure> 			
+			An even more complicated case is that of "split vowel signs", where one  part of the vowel 
+			sign has to be rendered before the base consonant, while the other part is rendered after 
+			the consonant. An example of this would be the Bengali vowel sign "O".
+			<figure>
+			<title>Ka Okaar (Bengali)</title> 
+				<mediaobject>
+					<imageobject>
+						<imagedata fileref="images/EPS/bn_ka_okaar.eps" format="EPS"/>
+					</imageobject> 
+					<imageobject>
+						<imagedata fileref="images/JPG/bn_ka_okaar.jpg" format="JPG"/>
+					</imageobject> 
+					<textobject>
+						<phrase>Ka Okaar (Bengali)</phrase>
+					</textobject> 
+					<caption>
+						<para>Example of split vowel signs - Ka Okaar (Bengali)</para>
+					</caption>
+				</mediaobject>
+			</figure> 			
+			</para>
+			<para>
+			In scripts like Latin, there is an almost one to one relation between code point and glyph.
+			In Indic scripts however, this is not the case. For example, let us consider the sequence 
+			"ka halant sha". Though this sequence is composed of three code points, on screen, this has 
+			to be represented by only one single glyph.
+			<figure>
+			<title>The Devanagri conjunct kshha</title> 
+				<mediaobject>
+					<imageobject>
+						<imagedata fileref="images/EPS/hi_ka_sha.eps" format="EPS"/>
+					</imageobject> 
+					<imageobject>
+						<imagedata fileref="images/JPG/hi_ka_sha.jpg" format="JPG"/>
+					</imageobject> 
+					<textobject>
+						<phrase>The Devanagri conjunct kshha</phrase>
+					</textobject> 
+					<caption>
+						<para>Formation of the Devanagri conjunct kshha</para>
+					</caption>
+				</mediaobject>
+			</figure> 			
+			</para>
+			<para>
+			Linguists describe these types of writing systems as "orthographic", which means that Indic 
+			scripts are a mixture phonemic (ie, where a basic character represents a single phoneme or a 
+			a basic unit of word distinguishing sound) and syllabic forms. When a rendering engine works 
+			on an Indic script, it usually does the processing from the level of individual syllables. 
+			A syllabic unit is a visual unit (glyph) as well. A syllable is formed around a "central" 
+			character (usually a consonant), which is known as the "base" character - for example:
+			<figure>
+			<title>Components of a Syllable</title> 
+				<mediaobject>
+					<imageobject>
+						<imagedata fileref="images/EPS/hi_ka_sha.eps" format="EPS"/>
+					</imageobject> 
+					<imageobject>
+						<imagedata fileref="images/PNG/bn_ka_oukaar_chandrabindu_reph.png" format="PNG"/>
+					</imageobject> 
+					<textobject>
+						<phrase>Components of a Syllable</phrase>
+					</textobject> 
+					<caption>
+						<para>Various components of a syllable</para>
+					</caption>
+				</mediaobject>
+			</figure> 			
+			</para>
+			<para>
+			Linguists usually treat the consonants inside a syllable as "dead consanants", ie, the 
+			consonant sans the inherent vowel in the consonant (this effect is achieved by adding 
+			a "halant" to the consonant). This allows us to reduce each component in a combining 
+			sequence to its most basic form, which can combine with the other components and generate 
+			the final syllable.
+			</para>
+			<para>
+			However, Unicode treats the syllables slightly differently - the picture below would 
+			illustrate the difference
+			<figure>
+			<title>Linguistic interpretation of a syllable vs the Unicode interpretation</title> 
+				<mediaobject>
+					<imageobject>
+						<imagedata fileref="images/EPS/unicode_vs_linguistic_syllables.eps" format="EPS"/>
+					</imageobject> 
+					<imageobject>
+						<imagedata fileref="images/JPG/unicode_vs_linguistic_syllables.jpg" format="JPG"/>
+					</imageobject> 
+					<textobject>
+						<phrase>Linguistic interpretation of a syllable vs the Unicode interpretation</phrase>
+					</textobject> 
+					<caption>
+						<para>Linguistic interpretation of a syllable vs the Unicode interpretation</para>
+					</caption>
+				</mediaobject>
+			</figure> 			
+			</para>
+			<para>
+			While working on fonts, keep in mind the way Unicode handles the syllables - it should make 
+			your job easier.
+			</para>
+			</sect1>
+		</chapter>
+		<chapter>
+		<title>Converting a font</title>
+			<para>
+			This chapter deals with the actual process of converting older fonts into Unicode compliant 
+			Open Type Fonts. In a nutshell, the entire process consists of three steps
+			</para>
+			<itemizedlist mark='opencircle'>
+				<listitem>
+					<para>
+					Choosing the right font.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+					Extracting the glyphs from the old font and putting them into the new font.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+					Adding OpenType tables to the new font
+					</para>
+				</listitem>
+			</itemizedlist>
+			<para>
+			Of course, then you have to test the font, and when you are satified with the font, you 
+			must package it and release it so that people can actually use it. I will be dealing with 
+			the first three steps in this chapter, and will describe the testing and release process in 
+			Chapter 3.
+			</para>
+			<para>
+			The tool you will be using is called <application>FontForge</application> - which is freely 
+			downloadable from <ulink url="http://fontforge.sourceforge.net">http://fontforge.sourceforge.net
+			</ulink>. FontForge is Free (as in free speech) and is licensed under a license which is 
+			very much similar to the revised BSD license. 
+			</para>
+			<note>
+				<para>
+				Fontforge was earlier known as Pfaedit - so don't be surprised to see an 
+				application called Pfaedit which looks similar to Fontforge.
+				</para>
+			</note>
+			<para>
+			Debian users may install Fontforge by issuing the command 
+			<command>apt-get install fontforge</command>
+			and Gentoo users may install it with the command 
+			<command>emerge fontforge</command>
+			If you are on any other distribution, go to the <ulink url="http://fontforge.sourceforge.net">
+			Fontforge website</ulink> and latest binary. If you are using a RPM based system (like 
+			Redhat, Fedora, SuSE, Mandrake, etc) - you can download the Fontforge RPM file and install 
+			it with the command
+			<command>rpm -ivh fontforge-&lt;version&gt;.rpm</command>
+			Users of systems like Slackware, Linux From Scratch can either compile Fontforge from scratch, 
+			or use tools like <application>rpm2targz</application> to extract the binaries from the RPM 
+			package.
+			</para>
+			<note>
+				<para>
+				However, during installation, remember that you will need to be root. If you don't 
+				have root access, you can install the binary locally in ~/bin, but that is I wouldn't
+				recommend it.
+				</para>
+			</note>
+			<para>
+			Fontforge also runs on Microsoft Windows and Mac OSX, but I haven't tried it 
+			on these platforms yet - if you have, feel free to add to this document and send me the diff 
+			file :).
+			</para>
+			<sect1>
+			<title>Initial tour of the Fontforge interface</title>
+				<para>
+				This section covers starting up Fontforge, and guides you through the main elements 
+				of its interface.
+				</para>
+				<sect2>
+				<title>Starting up Fontforge</title>
+				<para>
+				Fontforge does not have a menu entry. So, you have to start up manually using Xterm 
+				or any other similar Terminal application. To do so, fire up Xterm or GNOME-Terminal 
+				or Konsole or your favourite X terminal emulator and type the following command
+				<command>fontforge</command>
+				and Fontforge will startup. It will open up a file chooser dialog, which will let you 
+				open up a font for editing, or start a new font project.
+				</para>
+				<note>
+					<para>
+					If you want to avoid the file chooser dialog (which can be irritating after 
+					sometime), you can either use the command 
+					<command>fontforge -new</command>
+					which would start up fontforge with a blank font, or, the command
+					<command>fontforge &lt;font_filename&gt;</command>
+					which would open the specified font (you will need to specify the path 
+					to the physical fontfile.
+					</para>
+				</note>
+				<para>
+				I usually use a menu entry to startup Fontforge quickly. To have a entry in my 
+				GNOME menu, I put a file called <filename>fontforge.desktop</filename> in my 
+				<filename>/usr/share/applications</filename> directory. The contents of that 
+				file is listed below.
+				</para>
+				<screen>
+[Desktop Entry]
+Encoding=UTF-8
+Name=Character Map
+Exec=fontforge
+Icon=gucharmap.png
+Terminal=false
+Type=Application
+Categories=Application;Development;
+StartupNotify=false
+				</screen>
+			</sect2>
+			<sect2>
+			<title>The interface</title>
+				<para>
+				A font editor is not what you use everyday - and so, before jumping into the world 
+				of Indic fonts, you need to be aware of the basics of Fontforge.
+				</para>
+				<sect3>
+				<title>The Font View</title>
+					<para>
+					Fontforge opens up with what is called the "Font view" - a list of all the 
+					glyphs in the open font.
+					<figure>
+					<title>Font View</title> 
+						<mediaobject>
+							<imageobject>
+								<imagedata fileref="images/EPS/hi_ka_sha.eps" format="EPS"/>
+							</imageobject> 
+							<imageobject>
+								<imagedata fileref="images/PNG/ff_font_view.png" format="PNG"/>
+							</imageobject> 
+							<textobject>
+								<phrase>Font View</phrase>
+							</textobject> 
+							<caption>
+								<para>Font View in Fontforge</para>
+							</caption>
+						</mediaobject>
+					</figure> 			
+					The glyphs are initially displayed at a 24 pixel size, and the first thing that 
+					I usually do is increase this size to 48 pixels by clicking on 
+					<menuchoice>
+						<guimenu>View</guimenu>
+						<guimenuitem>48 pixel outline</guimenuitem>
+					</menuchoice>
+					. You should also enable glyph anti-aliasing by clicking on
+					<menuchoice>
+						<guimenu>View</guimenu>
+						<guimenuitem>Anti Alias</guimenuitem>
+					</menuchoice>
+					.
+					</para>
+					<para>
+					You can navigate through the glyph list with the arrow keys, as well with the 
+					scroll bar. You can also navigate between adjacent glyphs with the help of the 
+					<keycombo><keycap>Tab</keycap></keycombo> or the <keycombo><keycap>Shift</keycap>
+					<keycap>Tab</keycap></keycombo> keys.
+					</para>
+					<para>
+					On top of each glyph, usually its representative form from a standard font is 
+					displayed. When you select a particular glyph, its name, decription (human 
+					readable) and codepoint is displayed on top of the font view (just below the 
+					menubar). The same information is displayed as a tooltip when you hover the 
+					mouse over a particular glyph.
+					</para>
+				</sect3>
+				<sect3>
+				<title>The Outline View</title>
+					<para>
+					When you double click on a particular glyph in the font view, you will be 
+					presented with the "Outline View" of the glyph. Anyone who has used tools 
+					like the <application>GIMP</application> or <application>Xfig</application> 
+					should find the interface of the outline view familiar.
+					<figure>
+					<title>Outline View</title> 
+						<mediaobject>
+							<imageobject>
+								<imagedata fileref="images/EPS/hi_ka_sha.eps" format="EPS"/>
+							</imageobject> 
+							<imageobject>
+								<imagedata fileref="images/PNG/ff_outline_view.png" format="PNG"/>
+							</imageobject> 
+							<textobject>
+								<phrase>Outline View</phrase>
+							</textobject> 
+							<caption>
+								<para>Outline View in Fontforge (taken from the Fontforge documentation)</para>
+							</caption>
+						</mediaobject>
+					</figure> 			
+					The outline view is used mostly for editing the glyphs. We will be coming 
+					back to the outline view later in this chapter. For the time being, just note 
+					the two vertical lines in the outline view. The leftmost line denotes the 
+					postion where x=0 (yeah! coordinate geometry) for the glyph, and the line in 
+					the right (adjustable by "dragging") denotes the width of the glyph.
+					</para>
+				</sect3>
+			</sect2>
+		</sect1>
+		<sect1>
+		<title>Basic Tasks with Fontforge</title>
+			<para>
+			Before starting on an actual font, you must become familiar with some of the basic operations 
+			of Fontforge.
+			</para>
+			<sect2>
+			<title>Opening, Saving and Exporting Fonts</title>
+				<para>
+				Though Fontforge can open a variety of font formats (Truetype, Opentype, Postscript, 
+				BDF, etc), it usually stores the fonts in a format with the extension <filename>*.sfd
+				</filename> (Spline Font Database). To open a font (or a <filename>*.sfd</filename> file,
+				you can simply start Fontforge without any argument, and you will be presented with 
+				a file chooser dialog. You can also use
+                                <menuchoice>
+ 	                               <guimenu>File</guimenu>
+                                       <guimenuitem>Open</guimenuitem>
+                                </menuchoice>
+				to open files.
+				<figure>
+				<title>File chooser</title> 
+					<mediaobject>
+						<imageobject>
+							<imagedata fileref="images/EPS/hi_ka_sha.eps" format="EPS"/>
+						</imageobject> 
+						<imageobject>
+							<imagedata fileref="images/PNG/ff_file_chooser.png" format="PNG"/>
+						</imageobject> 
+						<textobject>
+							<phrase>File chooser</phrase>
+						</textobject> 
+						<caption>
+							<para>The file chooser in Fontforge</para>
+						</caption>
+					</mediaobject>
+				</figure> 			
+				</para>
+				<para>
+				To save files, simply use 
+				<menuchoice>
+                                       <guimenu>File</guimenu>
+                                       <guimenuitem>Save as</guimenuitem>
+                                </menuchoice>
+				. This saves the font being edited as a <filename>*.sfd</filename> file.
+				</para>
+				<para>
+				However, to get an actual useable font, you must use
+                                <menuchoice>
+                                       <guimenu>File</guimenu>
+                                       <guimenuitem>Export</guimenuitem>
+                                </menuchoice>
+				. In our situation we will be mostly exporting Truetype fonts (which have the GSUB 
+				and GPOS tables). However, Fontforge can export in a variety of other formats - 
+				take a look at the official <ulink url="http://fontforge.sourceforge.net/generate.html">
+				documentation</ulink> for a description of all the supported formats.
+				<figure>
+				<title>Export dialog</title> 
+					<mediaobject>
+						<imageobject>
+							<imagedata fileref="images/EPS/hi_ka_sha.eps" format="EPS"/>
+						</imageobject> 
+						<imageobject>
+							<imagedata fileref="images/PNG/ff_generate_fonts.png" format="PNG"/>
+						</imageobject> 
+						<textobject>
+							<phrase>Export dialog</phrase>
+						</textobject> 
+						<caption>
+							<para>The export dialog in Fontforge</para>
+						</caption>
+					</mediaobject>
+				</figure> 			
+				</para>
+				<note>
+					<para>
+					It may be worthwhile to mention here that Fontforge also ships with a tool 
+					called <application>sfddiff</application> which compares two SFD files.
+					</para>
+				</note>
+			</sect2>
+			<sect2>
+			<title>Copying, Pasting and Cutting Glyphs.</title>
+				<para>
+				There are two ways in which you can copy (or cut) glyphs in Fontforge. In the default 
+				method, only the glyph from the currently displayed font (ie, the outline font in our 
+				case) would be copied (or cut). In the second method, the metadata (name, substitution 
+				information, etc) of the character in question will also be copied with the character.
+				(There is also another way where the bitmaps associated with a particular character 
+				is also copied - but that's outside the scope of this particular document). To enable 
+				metadata copying, you must enable the
+                                <menuchoice>
+                                        <guimenu>Edit</guimenu>
+                                        <guimenuitem>Copy From</guimenuitem>
+                                	<guimenuitem>Glyph Metadata</guimenuitem>
+				</menuchoice>
+				check box, and then do the copying/cutting.
+				</para>
+				<para>
+				As far as pasting is concerned, remember that when you paste from Font View, the 
+				contents of the clipboard will be pasted onto the selected glyph, clearing out 
+				whatever was there earlier. To avoid this, use the 
+                                <menuchoice>
+                                        <guimenu>Edit</guimenu>
+                                        <guimenuitem>Paste Into</guimenuitem>
+				</menuchoice>
+				menu item, or paste from the Outline View.
+				</para>
+			</sect2>
+			<sect2>
+			<title>Rotating, Shifting and Scaling Glyphs</title>
+				<para>
+				To manipulate the glyphs of a font, you will first need to understand how to select 
+				portions of the glyph (or for that matter, the entire glyph). When you open the Outline 
+				View in Fontforge, you will that the outline of the glyph has a number of lots 
+				dots which are used to control the extend and slope of the lines. The dots or points which
+				control the slope are called control points (represented by small crosses), and the other 
+				main types of points include corner points (represented by square boxes), tangent points 
+				(represented by triangles) and curved points (represented by circles). Before starting 
+				work on this document, I was planning to explain the function of each and every type of 
+				point - but luckily (for me, that is), the Fontforge documentation does an even better 
+				<ulink url="http://fontforge.sourceforge.net/overview.html#intro">job</ulink> of that. 
+				Do take a look - I don't think I could have done better with the explanation. To select 
+				a portion of the glyph, drag your mouse over the points in that portion, and the points 
+				will get highlighted. To select the entire glyph, you can simply press 
+				<keycombo><keycap>Ctrl</keycap><keycap>A</keycap></keycombo> in the Outline view.
+				</para>
+				<para>
+				To shift the selected portion, you can click on a highlighted point, and then, while 
+				holding the <keycap>Ctrl</keycap> key, you can drag the entire selection with the mouse.
+				Or alternatively, you can also move the selection by using the arrow keys.
+				</para>
+				<para>
+				When in the outline view, you will notice that a there is a secondary window by the side 
+				which looks like this:
+				<figure>
+				<title>Tool palette</title> 
+					<mediaobject>
+						<imageobject>
+							<imagedata fileref="images/EPS/hi_ka_sha.eps" format="EPS"/>
+						</imageobject> 
+						<imageobject>
+							<imagedata fileref="images/PNG/ff_tool_palette.png" format="PNG"/>
+						</imageobject> 
+						<textobject>
+							<phrase>Tool palette</phrase>
+						</textobject> 
+						<caption>
+							<para>The tool palette in Fontforge</para>
+						</caption>
+					</mediaobject>
+				</figure>			
+				This is called the "tool palette", and it contains the tools that you will be using to 
+				edit the glyph. While converting the fonts, you will be mostly using the rotate and scale/resize 
+				tools - which are represented by 
+				<inlinegraphic fileref="images/PNG/ff_tool_palette_rotate.png"/>
+				and
+				<inlinegraphic fileref="images/PNG/ff_tool_palette_resize.png"/>
+				respectively.
+				</para>
+				<para>
+				To rotate a selection, highlight the selection, click on the tool button, and while 
+				pressing the left mouse button, move the pointer up (or down) until you have 
+				the required rotation.
+				</para>
+				<para>
+				To scale the selection, highlight the selection, click on the tool button, and while 
+				pressing the left mouse button, move the pointer vertically to do vertical scaling, and 
+				horizantally to get horizontal scrolling.
+				</para>
+			</sect2>
+		</sect1>
+		<sect1>
+		<title>Indic Fonts with Fontforge</title>
+			<para>
+			Now, finally we come to Indic fonts. To begin with, you will have to choose the legacy font 
+			you want to extract your glyphs from. I won't be covering the topic of drawing your own 
+			glyphs - but you can refer to the 
+			<ulink url="http://fontforge.sourceforge.net/editexample.html">Fontforge Tutorial</ulink>
+			for that. 
+			</para>
+			<sect2>
+			<title>Choosing a font and getting the glyphs</title>
+				<para>
+				Your chosen font can be of any kind - Truetype, Postscript - even the <filename>*.mf
+				</filename> fonts used in TeX (extracting glyphs from <filename>*.mf</filename> can 
+				be a little tricky and I'll be telling you on how to do it in Appendix A (section 1)
+				). When you choose a font, please be aware of the various legal aspects. Font 
+				licensing is a tricky issue - and here are the major points you need to be aware of -
+				</para>
+				<itemizedlist mark='solidcircle'>
+					<listitem>
+						<para>					
+						Glyphs are copyrighted matter - you cannot simply choose any font and  rip off its glyphs.
+						</para>
+					</listitem>
+					<listitem>
+						<para>
+						You must have the permission to modify and make defivative works of your chosen font.
+						</para>
+					</listitem>
+					<listitem>
+						<para>
+						If the original font is GPL'ed - your derivative font must also be GPL'ed
+						</para>
+					</listitem>
+					<listitem>
+						<para>
+						One may use different licenses for the actual font and the glyphs - if possible verify the 
+						licensing issues with the original author.
+						</para>
+					</listitem>
+				</itemizedlist>
+				<para>
+				Once you are satisfied that you can actually make derivative works of your chosen 
+				font, you can begin proper work on it.
+				</para>
+				<note>
+					<para>
+					During choosing your font - make sure that it has got all the glyphs that 
+					you require. To do this, open up the font in FontForge - and enable 
+					<menuchoice>
+						<guimenu>View</guimenu>
+						<guimenuitem>Compacted View</guimenuitem>
+					</menuchoice>
+					Then verify (usually by cross checking with a characters and conjunct list, 
+					which can usually be found in a dictionary) whether the font has got all 
+					the requisite glyphs or not. You can also compare the glyphlist with the 
+					glyphlist of an existing OpenType font.
+					</para>
+				</note>
+			</sect2>
+			<sect2>
+			<title>Getting the glyphs in place</title>
+				<para>
+				At first, the bulk of your job will consist of copying and pasting the glyphs in the 
+				right positions. To do that, you will need to have a blank font at first. From the 
+				Fontforge menu - choose 
+				<menuchoice>
+					<guimenu>File</guimenu>
+					<guimenuitem>New</guimenuitem>
+				</menuchoice>
+				A blank font will open up. You'll need to edit some of the basic properties of this 
+				font - so open up the 
+                                <menuchoice>
+					<guimenu>Element</guimenu>
+					<guimenuitem>Font Info..</guimenuitem>
+				</menuchoice>
+				dialog. In the <guimenuitem>Name</guimenuitem> tab of that dialog box - fill in the 
+				FontName field in the format &lt;Fontname&gt;&lt;Weight&gt;. (Weight determines 
+				how dark text rendered in a font appears - ie, bold, light, etc). The other fields in that 
+				tab (except the copyright one) will get populated automatically. Now, move on to the 
+				<guilabel>Encoding</guilabel> tab, and select <guilabel>ISO 10646-1 (Unicode,  
+				BMP)</guilabel>. Now select the <guilabel>General</guilabel> tab and 
+				copy the values from the original font (this would make the job of transferring the 
+				glyphs much easier).
+				</para>
+				<para>
+				Once all of this has been completed - open up a character map application like 
+				<application>Gucharmap</application> and find the beginning of the Unicode block for 
+				your script. Once you have found that out - scroll down in Fontforge to that 
+				codepoint, and start copying the glyphs from the legacy font to the proper codepoints. 
+				Usually the sequence of the glyphs in the two fonts will not match - so you will 
+				have to do a little hunting around to do the transfers.
+				</para>
+				<note>
+					<para>
+					Sometimes, in a typical legacy Indic font - you will often get weird forms 
+					of ordinary characters (cut off portion of a "ja", etc) - search for the 
+					other half - and you'll get that too. After you locate the "pieces", just 
+					paste them one by one into the same outline view, and adjust their positions, 
+					and you'll get the requisite (and complete glyph)
+					</para>
+				</note>
+				<para>
+				Once you have covered the entire Unicode block for your script (don't worry if you 
+				don't manage to find glyphs for some of the more unusual characters like currency 
+				signs, etc - usually they are not used in daily work), you will need to move on to 
+				handling the conjuncts. 
+				</para>
+				<para>
+				While putting the conjuncts in your fonts, you must make sure that you don't put them 
+				in an area which has been assigned by Unicode to some other characters. To do this, 
+				try to estimate the number of conjuncts that you are going to have in your font. Now, 
+				add twenty to this figure, and open the Encoding tab in the "Font Info" dialog. In the 
+				Number of Glyphs field, enter the sum of the result figure and 65536  
+				Now start adding the conjuncts, starting from point 65536.
+				</para>
+				<sect3>
+				<title>Naming the Glyphs</title>
+					<para>
+					Once you have finished transferring all the glyphs, you will have to name them. 
+					(Actually, a default name is already assign to the glyphs, but choosing an 
+					alternative, more human readable naming convention helps a lot later on.) To 
+					change the name of the glyph, go to the Character Information dialog box by 
+					using the <guilabel>Char Info...</guilabel> in the right click menu, or 
+					by  using
+					<menuchoice>
+					<guimenu>Element</guimenu>
+					<guimenuitem>Char Info...</guimenuitem>
+					</menuchoice>
+					The naming convention that we usually follow is &lt;Language Code&gt;_&lt;
+					Character Name&lt;. By this conventsion, Ux0995 becomes bn_ka.
+					</para>
+				</sect3>
+			</sect2>
+			<sect2>
+			<title>Adding the substitution tables</title>
+				<para>
+				Once the naming has been done, you will have to start adding the substitution 
+				information for the conjuncts and the other complex glyphs. However, before going 
+				into that, you must understand the concept of "features".
+				</para>
+				<sidebar>
+				<title>Features in OpenType Fonts</title>
+					<para>
+					When a rendering engine handles a chunk of text (usually a syllable), the 
+					processing is divided into a set of predefined "features", which are "applied"
+					one after the other in a standardized way. For example, the Pango rendering 
+					engine (version 1.6.0 and above) has a flag which remains active when the 
+					renderer is handling the first syllable of a word and becomes inactive after that. 
+					If this flag is enabled, the "init" or "Initial" feature (used in Bengali) is 
+					applied to that particular syllable, and as a result the "Initial Form" is 
+					only applied to the first syllable of a word. Thus, the substitution which 
+					is associated with "init" is applied only to the first syllable of a word.
+					<figure>
+					<title>The init feature</title>
+					<mediaobject>
+						<imageobject>
+							<imagedata fileref="images/EPS/init_demo.eps" format="EPS"/>
+						</imageobject>
+						<imageobject>
+							<imagedata fileref="images/JPG/init_demo.jpg" format="JPG"/>
+						</imageobject>
+						<textobject>
+							<phrase>The init feature</phrase>
+						</textobject>
+						<caption>
+							<para>
+							Note that the first ekaar (Bengali) is different from the
+							rest (no leading horizontal bar).
+							</para>
+						</caption>
+					</mediaobject>
+					</figure>
+					</para>
+					<para>
+					Take a look at the Microsoft OpenType specifications at the Microsoft Typography 
+					<ulink url="http://www.microsoft.com/typography/specs/default.htm">site</ulink> 
+					for a list of features used for your script (along with their applications).
+					</para>
+					<note>
+						<para>
+						However, remember that you need not utilize all the features listed at 
+						the Microsoft site for your font. For example, a number of Bengali 
+						fonts do not use the init feature. But, in general, the higher number of 
+						features that you use, the more complete your font is.
+						</para>
+					</note>
+				</sidebar>
+				<para>
+				Once you have gone through the list of features, select the first conjunct in your list, 
+				and open up the "Char Info.." dialog either through the menu or by using the 
+				<keycombo><keycap>Ctrl</keycap><keycap>L</keycap></keycombo> key combination. Select the 
+				Ligature tab and click on the <guilabel>New</guilabel> button. In the dialog that comes 
+				up, in the Components field, write the components that make up that particular ligature, 
+				ie, for the <emphasis>hi_ka_ka</emphasis> ligature, the components would be 
+				<emphasis>hi_ka hi_halant hi_ka</emphasis>. (Now do you understand why using sensible 
+				names for the glyphs help ?). Select the appropriate feature from the "Tag" drop down 
+				list and select the script name (this can also be DFLT) from the Language and Scripts 
+				drop down menu. 
+				<figure>
+				<title>Modifying ligature information</title> 
+					<mediaobject>
+						<imageobject>
+							<imagedata fileref="images/EPS/hi_ka_sha.eps" format="EPS"/>
+						</imageobject> 
+						<imageobject>
+							<imagedata fileref="images/PNG/ff_ligature_properties.png" format="PNG"/>
+						</imageobject> 
+						<textobject>
+							<phrase>Modifying ligature information</phrase>
+						</textobject> 
+						<caption>
+							<para>Fontforge - Modifying ligature information</para>
+						</caption>
+					</mediaobject>
+				</figure>			
+				</para>
+				<note>
+					<para>
+					Remember that a glyph which substitute another <emphasis>single</emphasis> 
+					glyph is not a ligature, but simply, a substitution. This kind of substitutions 
+					are handled in the "Subs" tab of the Fontforge Char Info dialog box.
+					</para>
+				</note>	
+				<tip>
+					<para>
+					In Bangla, most of the ligature have the <firstterm>Pre Base Substitution
+					</firstterm> (pres) Tag, and I usually tend to group the ligature glyphs 
+					featurewise. This makes adding Tag information slightly easier.
+					</para>
+				</tip>
+				<note>
+					<para>
+					Also remember that a single ligature can have multiple substitution information 
+					associated with it. For example, the sequence Bengali Ra + Hashanta and 
+					Assamese Ra + Hashanta combine to form the same glyph of a reph.
+					<!--image later-->
+					</para>
+				</note>
+			</sect2>
+			<sect2>
+			<title>Adding the Positioning Information</title>
+				<para>
+				After the substitution information has been added, you will have to add the positioning 
+				information for the various <firstterm>marks</firstterm> (like chandrabindu, ukaar, reph, 
+				etc.). Positioning in Fontforge is done via <firstterm>anchors</firstterm>. 
+				</para>
+				<sidebar>
+				<para>
+				An anchor (denoted by a dot) is attached to a mark (eg, a reph) and the the 
+				corresponding reph <firstterm>anchor class</firstterm> anchor can be added to the base 
+				glyphs as required. During rendering, the reph anchor is positioned 
+				<emphasis>exactly</emphasis> over the anchor on the base that belongs to the reph 
+				anchor class, and as a result, the reph moves to the position we want it to.
+				</para>
+				</sidebar>
+				<para>
+				There are one or more <firstterm>anchor class</firstterm> in a font, and they can be 
+				added or removed by using the <guilabel>Anchor Classes</guilabel> tab in the <guilabel>
+				Font Info..</guilabel> dialog box. To add an anchor class, press the 
+				<guilabel>New</guilabel> button in the <guilabel>Anchor Classes</guilabel> tab. Usually, 
+				we use one (or two) marks per anchor class, so the <guilabel>Name</guilabel> should be in 
+				the format bn_ukaar_pos (in case of one mark) bn_ukaar_uukaar (in case of two marks). 
+				If the mark attaches to the top of the <firstterm>base glyph</firstterm>, then the 
+				<guilabel>Tag</guilabel> should be <firstterm>Above Base Mark</firstterm> (abvm). 
+				Examples of such marks include the reph and the bindi, and for Devanagari, ekaar, 
+				aikaar, etc. <firstterm>Below Base Mark</firstterm> or blwm include ukaar, uukaar, 
+				rikaar, etc.
+				<figure>
+				<title>Adding a new anchor class</title> 
+					<mediaobject>
+						<imageobject>
+							<imagedata fileref="images/EPS/hi_ka_sha.eps" format="EPS"/>
+						</imageobject> 
+						<imageobject>
+							<imagedata fileref="images/PNG/ff_anchor_classes.png" format="PNG"/>
+						</imageobject> 
+						<textobject>
+							<phrase>Adding a new anchor class</phrase>
+						</textobject> 
+						<caption>
+							<para>Fontforge - Adding a new anchor class</para>
+						</caption>
+					</mediaobject>
+				</figure>			
+				</para>
+				<para>
+				Once you have added the Anchor Class, open up the Outline View of the mark, and from 
+				<menuchoice>
+				<guimenu>Point</guimenu>
+				<guimenuitem>Add Anchor</guimenuitem>
+				</menuchoice>
+				A dialog box, titled <guilabel>Anchor Point Info</guilabel> will pop up. Choose the 
+				proper anchor class from the drop down menu. Since you are adding the anchor point 
+				to a mark, the <guilabel>Mark</guilabel> will be automatically enabled (if it is not, 
+				enable it). After you are satisfied with all the settings, click on <guilabel>OK
+				</guilabel>. A blue cross will appear on the Outline View canvas. Click on it, and drag 
+				it to the the desired position.
+				</para>
+				<warning>
+					<para>
+					It is important that you choose the right Anchor Class while adding the anchor 
+					point - otherwise your font may look really really weird in some cases.
+					</para>
+				</warning>
+				<para>
+				The process for adding anchor points to the base glyphs is more or less the same - only 
+				you will have to enable the <guilabel>BaseChar</guilabel> radio button in case of 
+				characters and the <guilabel>BaseLig</guilabel> radio button in case of ligatures.
+				<figure>
+				<title>Adding a new anchor point</title> 
+					<mediaobject>
+						<imageobject>
+							<imagedata fileref="images/EPS/hi_ka_sha.eps" format="EPS"/>
+						</imageobject> 
+						<imageobject>
+							<imagedata fileref="images/PNG/ff_anchor_point.png" format="PNG"/>
+						</imageobject> 
+						<textobject>
+							<phrase>Adding a new anchor point</phrase>
+						</textobject> 
+						<caption>
+							<para>Fontforge - Adding a new anchor point</para>
+						</caption>
+					</mediaobject>
+				</figure>			
+				</para>
+				<tip>
+					<para>
+					To preposition the anchor point, just click on the desired position on the 
+					Outline View canvas before clicking on <guilabel>Add Anchor</guilabel>. The 
+					anchor point will automagically appear in the position that you clicked.
+					</para>					
+				</tip>			
+			</sect2>
+		</sect1>
+	</chapter>
+	<chapter>
+	<title>Testing and Packaging your Font</title>
+		<para>
+		Once you have created all the GPOS tables and entered all the requisite substitution information, 
+		you will have to test your font, and once you are satisfied with the results of your test, you will 
+		have to package it and release it to the world.
+		</para>
+		<sect1>
+		<title>Testing your font</title>
+			<para>
+			Testing fonts can be a tricky affair, since there are at least four major rendering engines 
+			you need to be compatible with, and even then, you cannot be sure whether your font will 
+			work in <emphasis>all</emphasis> versions of a given rendering engine. In this section, I'll 
+			give you an idea of the bare minimum that you must do to ensure the quality of your font.
+			</para>
+			<para>
+			The test process can be divided into three different parts, and each part of the process must 
+			be repeated across the various rendering engines - namely
+			</para>
+			<itemizedlist mark='opencircle'>
+				<listitem>
+					<para>
+					IBM's ICU  (use <application>OpenOffice.org</application> to test this)
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+					Pango (use <application>Gedit</application>  to test this)
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+					QT (use <application>Kword</application>  to test this)
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+					Microsoft's Uniscribe Engine (use notepad in Windows XP, or Internet Explorer 6 in 
+				  	Windows 98 to test this).				  
+					</para>
+				</listitem>
+			</itemizedlist>
+			<tip>
+				<para>
+				The best rendering engine (in terms of handling Indic Open Type fonts) that I have 
+				ever come accross is the one used in the <ulink url="http://www.yudit.org">Yudit</ulink> editor. 
+				During the devlopment process, I usually test my fonts with Yudit, and once initial 
+				development is complete, I move on to the other rendering systems for testing.		
+				</para>
+			</tip>
+			<sect2>
+			<title>Part 1 - Testing Substitution</title>
+				<para>
+				To test the substitution, you will have to make a list of all the conjuncts that are 
+				<emphasis>actually used</emphasis> in your script. Such a list is usually available in 
+				a dictionary or in a grammar book. After you make this list, see how this list is 
+				rendered with your fonts by different rendering engines. 
+				</para>
+				<tip>
+					<para>
+					Usually most of the errors are caused by typos and other similar minor 
+					goof ups. However, in some (rare) cases, (especially in case of reph and 
+					vattu) errors are caused due to the incorrect GSUB ordering. The ordering can 
+					be changed by accessing the <guilabel>Set GSUB/morx ordering </guilabel> dialog  
+					in the <guilabel>TTF Values</guilabel> tab of the Font Info.. window.
+					</para>
+				</tip>
+			</sect2>
+			<sect2>
+			<title>Part 2 - Testing Positioning</title>
+				<para>
+				To test the positioning, take the base characters, as well as the conjuncts from the 
+				previous test, and add all possible marks to the characters and conjuncts (one mark per 
+				list). Then take a look at the result using different setups (in Gedit, Kword, etc).
+				</para>
+				<tip>
+					<para>
+					Usually, I take the character list, add a particular mark (say ukaar) by hand, 
+					and then add the rest of the marks to the other lists by using the 
+					<guilabel>Find and Replace</guilabel> feature of the editor that I am using.
+					</para>
+				</tip>
+			</sect2>
+			<sect2>
+			<title>Part 3 - Actual Real World Testing (simulated)</title>
+				<para>
+				In the final testing excercise, get some actual real world text from some random 
+				source (I usually copy paste from news sites), and see how it renders in different 
+				applications. Also, take print outs on paper - just to make sure.
+				</para>
+				<tip>
+					<para>
+					During this phase, you might notice that in GNU/Linux applications, the 
+					glyphs do not line up properly in the x-axis. This happens usually due to the 
+					fact that the autohinter used in the Freetype project cannot handle Indic 
+					and CJK fonts properly. The work around for this issue is to add the following 
+					lines to <filename>/etc/fonts/local.conf</filename>:
+					</para>
+					<screen>
+&lt;match target="font"&gt;
+	&lt;test name="family"&gt;
+		&lt;string&gt;Name of Your Font&lt;/string&gt;
+	&lt;/test&gt;
+	&lt;edit name="hinting"&gt;
+		&lt;bool&gt;false&lt;/bool&gt;
+	&lt;/edit&gt;
+&lt;/match&gt;
+					</screen>
+				</tip>
+			</sect2>
+		</sect1>
+		<sect1>
+		<title>Releasing Your Font</title>
+			<para>
+			To release your font - decide on a versioning scheme that you want to use. I personally prefer 
+			the &lt;majorversion&gt;&lt;minorversion&gt;&lt;revision&gt; versioning scheme, where really 
+			big changes (addition of GPOS tables, etc) are denoted by a bump in majorversion, not so major 
+			changes and improvements (refinement and addition of a few glyphs, etc) are accompanied by a 
+			change in minorversion, and bugfixes, documentation fixes, etc are denoted by a bump in the 
+			revision.
+			</para>
+			<para>
+			Make a directory (with the same name as your font), and put the following files into it:
+			</para>
+			<itemizedlist mark='opencircle'>
+				<listitem>
+					<para>
+					The ttf font.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+					The SFD file (usually in a subdirectory called <filename>src</filename>
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+					The license of the font (in a file called <filename>COPYING.txt</filename>
+					A brief <filename>README.txt</filename> file - explaining the installation 
+				  	procedures, and whom to contact for bug reports, etc.
+					</para> 
+				</listitem>
+				<listitem>
+					<para>
+					A file called <filename>ORIGINS.txt</filename> - stating the original author of 
+				  	the glyphs, and the name of the parent font (from which you have extracted your 
+				  	glyphs)
+					</para>
+				</listitem>
+			</itemizedlist>
+			<para>
+			Make a tarball of this directory in the format <filename>fontname-versionnumber.tar.gz
+			</filename> and upload it somewhere.
+			</para>
+			<tip>
+				<para>
+				If you don't have webspace for uploading, consider starting a project at 
+				<ulink url="http://sarovar.org">Sarovar</ulink> or <ulink url="http://sourceforge.net">
+				Sourceforge</ulink>.
+				</para>
+			</tip>
+			<para>
+			If your font is an Open Source one (hopefully it would be!), you can now make announcements 
+			to <ulink url="http://freshmeat.net">FreshMeat</ulink> and the various Indic computing related 
+			mailing lists. Also, if possible - just drop a note to the author of this document - hehe :). 
+			</para>
+		</sect1>		
+	</chapter>	
+	<appendix>
+		<title>Appendix A - Miscellaneous information</title>
+		<sect1>
+		<title>Extracting glyphs from *.mf files</title>
+			<para>
+			Fontforge sometimes has problems opening the *mf (mf stands for <firstterm>Metafont</firstterm>) 
+			files that come with Indic language packages for TeX. There is a command line tool called 
+			<application>mftrace</application>, which can be downloaded from <ulink 
+			url="http://www.cs.uu.nl/~hanwen/mftrace/">http://www.cs.uu.nl/~hanwen/mftrace/</ulink>, and I 
+			usually use that to handle the *.mf files.
+			</para>
+			<para>
+			To use mftrace, <command>cd</command> into the directory which has the *.mf files and issue 
+			the command <command>mftrace --autotrace --truetype &lt;fontname without the mf extension&gt;
+			</command>. Note that you will need to have Fontforge and <ulink url="http://autotrace.sf.net">
+			Autotrace</ulink> installed to use this command. If mftrace is successful - you will have 
+			a truetype file in the directory from which you can easily extract the required glyphs.
+			</para>
+		</sect1>
+		<sect1>
+		<title>Non Indic glyphs in your font</title>
+			<para>
+			The official Microsoft specifications suggest that apart from the Indic glyphs in a font, 
+			the glyphs for a few commonly used punctuations, Latin numbers and a few control characters 
+			must be included. The full list of recommended glyphs are available 
+			<ulink url="http://www.microsoft.com/typography/otfntdev/glyphs.htm">here</ulink>
+			</para>
+			<para>
+			You can extract these glyphs from any Free font used in your GNU/Linux system.
+			</para>			
+		</sect1>
+		<sect1>
+		<title>Installing Fonts in different platforms</title>
+			<para>
+			In modern Unix like systems (which use modern version of X windows), you can install fonts 
+			my copying them to <filename>~/.fonts</filename> and then using the command 
+			<command>fc-cache</command>. You must have <application>Fontconfig</application> installed 
+			to use this feature.
+			</para>
+			<para>
+			In Microsoft Windows, copy the font to <filename>C:/Windows/Fonts</filename> and restart.
+			</para>
+		</sect1>
+	</appendix>
+<appendix id="gfdl">
+<appendixinfo>
+<title>Appendix B - GNU Free Documentation License</title>
+
+ <pubdate>Version 1.2, November 2002</pubdate>
+ <copyright><year>2000,2001,2002</year>
+ <holder>Free Software Foundation, Inc.</holder></copyright>
+ <legalnotice id="gfdl-legalnotice">
+ <para><address>Free Software Foundation, Inc.
+ <street>59 Temple Place, Suite 330</street>,
+ <city>Boston</city>,
+ <state>MA</state>
+ <postcode>02111-1307</postcode>
+ <country>USA</country>
+ </address></para>
+ <para>Everyone is permitted to copy and distribute verbatim copies
+ of this license document, but changing it is not allowed.</para>
+ </legalnotice>
+ <releaseinfo>Version 1.2, November 2002</releaseinfo>
+</appendixinfo>
+
+<title>GNU Free Documentation License</title>
+<section id="gfdl-0"><title>PREAMBLE</title>
+
+<para>The purpose of this License is to make a manual, textbook, or
+other functional and useful document "free" in the sense of freedom: to
+assure everyone the effective freedom to copy and redistribute it, with
+or without modifying it, either commercially or noncommercially.
+Secondarily, this License preserves for the author and publisher a way
+to get credit for their work, while not being considered responsible for
+modifications made by others.</para>
+
+<para>This License is a kind of "copyleft", which means that derivative
+works of the document must themselves be free in the same sense.  It
+complements the GNU General Public License, which is a copyleft license
+designed for free software.</para>
+
+<para>We have designed this License in order to use it for manuals for
+free software, because free software needs free documentation: a free
+program should come with manuals providing the same freedoms that the
+software does.  But this License is not limited to software manuals; it
+can be used for any textual work, regardless of subject matter or
+whether it is published as a printed book.  We recommend this License
+principally for works whose purpose is instruction or reference.</para>
+</section>
+
+<section id="gfdl-1"><title>APPLICABILITY AND DEFINITIONS</title>
+
+<para id="gfdl-doc">This License applies to any manual or other work, in
+any medium, that contains a notice placed by the copyright holder saying
+it can be distributed under the terms of this License.  Such a notice
+grants a world-wide, royalty-free license, unlimited in duration, to use
+that work under the conditions stated herein.  The "Document", below,
+refers to any such manual or work.  Any member of the public is a
+licensee, and is addressed as "you".  You accept the license if you
+copy, modify or distribute the work in a way requiring permission under
+copyright law.</para>
+
+<para id="gfdl-mod-ver">A "Modified Version" of the Document means any
+work containing the Document or a portion of it, either copied verbatim,
+or with modifications and/or translated into another language.</para>
+
+<para id="gfdl-secnd-sect">A "Secondary Section" is a named appendix or
+a front-matter section of the Document that deals exclusively with the
+relationship of the publishers or authors of the Document to the
+Document's overall subject (or to related matters) and contains nothing
+that could fall directly within that overall subject.  (Thus, if the
+Document is in part a textbook of mathematics, a Secondary Section may
+not explain any mathematics.)  The relationship could be a matter of
+historical connection with the subject or with related matters, or of
+legal, commercial, philosophical, ethical or political position
+regarding them.</para>
+
+<para id="gfdl-inv-sect">The "Invariant Sections" are certain Secondary
+Sections whose titles are designated, as being those of Invariant
+Sections, in the notice that says that the Document is released under
+this License.  If a section does not fit the above definition of
+Secondary then it is not allowed to be designated as Invariant.  The
+Document may contain zero Invariant Sections.  If the Document does not
+identify any Invariant Sections then there are none.</para>
+
+<para id="gfdl-cov-text">The "Cover Texts" are certain short passages of
+text that are listed, as Front-Cover Texts or Back-Cover Texts, in the
+notice that says that the Document is released under this License.  A
+Front-Cover Text may be at most 5 words, and a Back-Cover Text may be at
+most 25 words.</para>
+
+<para id="gfdl-transparent">A "Transparent" copy of the Document means a
+machine-readable copy, represented in a format whose specification is
+available to the general public, that is suitable for revising the
+document straightforwardly with generic text editors or (for images
+composed of pixels) generic paint programs or (for drawings) some widely
+available drawing editor, and that is suitable for input to text
+formatters or for automatic translation to a variety of formats suitable
+for input to text formatters.  A copy made in an otherwise Transparent
+file format whose markup, or absence of markup, has been arranged to
+thwart or discourage subsequent modification by readers is not
+Transparent.  An image format is not Transparent if used for any
+substantial amount of text.  A copy that is not "Transparent" is called
+"Opaque".</para>
+
+<para>Examples of suitable formats for Transparent copies include plain
+ASCII without markup, Texinfo input format, LaTeX input format, SGML or
+XML using a publicly available DTD, and standard-conforming simple HTML,
+PostScript or PDF designed for human modification.  Examples of
+transparent image formats include PNG, XCF and JPG.  Opaque formats
+include proprietary formats that can be read and edited only by
+proprietary word processors, SGML or XML for which the DTD and/or
+processing tools are not generally available, and the machine-generated
+HTML, PostScript or PDF produced by some word processors for output
+purposes only.</para>
+
+<para id="gfdl-title-page">The "Title Page" means, for a printed book,
+the title page itself, plus such following pages as are needed to hold,
+legibly, the material this License requires to appear in the title page.
+For works in formats which do not have any title page as such, "Title
+Page" means the text near the most prominent appearance of the work's
+title, preceding the beginning of the body of the text.</para>
+
+<para id="gfdl-entitled">A section "Entitled XYZ" means a named subunit
+of the Document whose title either is precisely XYZ or contains XYZ in
+parentheses following text that translates XYZ in another language.
+(Here XYZ stands for a specific section name mentioned below, such as
+"Acknowledgements", "Dedications", "Endorsements", or "History".)  To
+"Preserve the Title" of such a section when you modify the Document
+means that it remains a section "Entitled XYZ" according to this
+definition.</para>
+
+<para>The Document may include Warranty Disclaimers next to the notice
+which states that this License applies to the Document.  These Warranty
+Disclaimers are considered to be included by reference in this License,
+but only as regards disclaiming warranties: any other implication that
+these Warranty Disclaimers may have is void and has no effect on the
+meaning of this License.</para>
+</section>
+
+<section id="gfdl-2"><title>VERBATIM COPYING</title>
+
+<para>You may copy and distribute the Document in any medium, either
+commercially or noncommercially, provided that this License, the
+copyright notices, and the license notice saying this License applies to
+the Document are reproduced in all copies, and that you add no other
+conditions whatsoever to those of this License.  You may not use
+technical measures to obstruct or control the reading or further copying
+of the copies you make or distribute.  However, you may accept
+compensation in exchange for copies.  If you distribute a large enough
+number of copies you must also follow the conditions in section 3.
+</para>
+
+<para>You may also lend copies, under the same conditions stated above,
+and you may publicly display copies.</para>
+</section>
+
+<section id="gfdl-3"><title>COPYING IN QUANTITY</title>
+
+<para>If you publish printed copies (or copies in media that commonly
+have printed covers) of the Document, numbering more than 100, and the
+Document's license notice requires Cover Texts, you must enclose the
+copies in covers that carry, clearly and legibly, all these Cover Texts:
+Front-Cover Texts on the front cover, and Back-Cover Texts on the back
+cover.  Both covers must also clearly and legibly identify you as the
+publisher of these copies.  The front cover must present the full title
+with all words of the title equally prominent and visible.  You may add
+other material on the covers in addition.  Copying with changes limited
+to the covers, as long as they preserve the title of the Document and
+satisfy these conditions, can be treated as verbatim copying in other
+respects.</para>
+
+<para>If the required texts for either cover are too voluminous to fit
+legibly, you should put the first ones listed (as many as fit
+reasonably) on the actual cover, and continue the rest onto adjacent
+pages.</para>
+
+<para>If you publish or distribute Opaque copies of the Document
+numbering more than 100, you must either include a machine-readable
+Transparent copy along with each Opaque copy, or state in or with each
+Opaque copy a computer-network location from which the general
+network-using public has access to download using public-standard
+network protocols a complete Transparent copy of the Document, free of
+added material.  If you use the latter option, you must take reasonably
+prudent steps, when you begin distribution of Opaque copies in quantity,
+to ensure that this Transparent copy will remain thus accessible at the
+stated location until at least one year after the last time you
+distribute an Opaque copy (directly or through your agents or retailers)
+of that edition to the public.</para>
+
+<para>It is requested, but not required, that you contact the authors of
+the Document well before redistributing any large number of copies, to
+give them a chance to provide you with an updated version of the
+Document.</para>
+</section>
+
+<section id="gfdl-4"><title>MODIFICATIONS</title>
+
+<para>You may copy and distribute a Modified Version of the Document
+under the conditions of sections 2 and 3 above, provided that you
+release the Modified Version under precisely this License, with the
+Modified Version filling the role of the Document, thus licensing
+distribution and modification of the Modified Version to whoever
+possesses a copy of it.  In addition, you must do these things in the
+Modified Version:</para>
+
+<orderedlist id="gfdl-modif-cond" numeration="upperalpha">
+  <title>GNU FDL Modification Conditions</title>
+<listitem><simpara>Use in the Title Page (and on the covers, if any) a
+  title distinct from that of the Document, and from those of previous
+  versions (which should, if there were any, be listed in the History
+  section of the Document).  You may use the same title as a previous
+  version if the original publisher of that version gives permission.
+</simpara></listitem>
+<listitem><simpara>List on the Title Page, as authors, one or more
+  persons or entities responsible for authorship of the modifications in
+  the Modified Version, together with at least five of the principal
+  authors of the Document (all of its principal authors, if it has fewer
+  than five), unless they release you from this requirement.
+</simpara></listitem>
+<listitem><simpara>State on the Title page the name of the publisher of
+  the Modified Version, as the publisher.</simpara></listitem>
+<listitem><simpara>Preserve all the copyright notices of the Document.
+</simpara></listitem>
+<listitem><simpara>Add an appropriate copyright notice for your
+  modifications adjacent to the other copyright notices.
+</simpara></listitem>
+<listitem><simpara>Include, immediately after the copyright notices, a
+  license notice giving the public permission to use the Modified
+  Version under the terms of this License, in the form shown in the
+  <link linkend="gfdl-addendum">Addendum</link> below.
+</simpara></listitem>
+<listitem><simpara>Preserve in that license notice the full lists of
+  Invariant Sections and required Cover Texts given in the Document's
+  license notice.</simpara></listitem>
+<listitem><simpara>Include an unaltered copy of this License.
+</simpara></listitem>
+<listitem><simpara>Preserve the section Entitled "History", Preserve its
+  Title, and add to it an item stating at least the title, year, new
+  authors, and publisher of the Modified Version as given on the Title
+  Page.  If there is no section Entitled "History" in the Document,
+  create one stating the title, year, authors, and publisher of the
+  Document as given on its Title Page, then add an item describing the
+  Modified Version as stated in the previous sentence.
+</simpara></listitem>
+<listitem><simpara>Preserve the network location, if any, given in the
+  Document for public access to a Transparent copy of the Document, and
+  likewise the network locations given in the Document for previous
+  versions it was based on.  These may be placed in the "History"
+  section.  You may omit a network location for a work that was
+  published at least four years before the Document itself, or if the
+  original publisher of the version it refers to gives permission.
+</simpara></listitem>
+<listitem><simpara>For any section Entitled "Acknowledgements" or
+  "Dedications", Preserve the Title of the section, and preserve in the
+  section all the substance and tone of each of the contributor
+  acknowledgements and/or dedications given therein.
+</simpara></listitem>
+<listitem><simpara>Preserve all the Invariant Sections of the Document,
+  unaltered in their text and in their titles.  Section numbers or the
+  equivalent are not considered part of the section titles.
+</simpara></listitem>
+<listitem><simpara>Delete any section Entitled "Endorsements".
+  Such a section may not be included in the Modified Version.
+</simpara></listitem>
+<listitem><simpara>Do not retitle any existing section to be Entitled
+  "Endorsements" or to conflict in title with any Invariant Section.
+</simpara></listitem>
+<listitem><simpara>Preserve any Warranty Disclaimers.
+</simpara></listitem>
+</orderedlist>
+
+<para>If the Modified Version includes new front-matter sections or
+appendices that qualify as Secondary Sections and contain no material
+copied from the Document, you may at your option designate some or all
+of these sections as invariant.  To do this, add their titles to the
+list of Invariant Sections in the Modified Version's license notice.
+These titles must be distinct from any other section titles.</para>
+
+<para>You may add a section Entitled "Endorsements", provided it
+contains nothing but endorsements of your Modified Version by various
+parties--for example, statements of peer review or that the text has
+been approved by an organization as the authoritative definition of a
+standard.</para>
+
+<para>You may add a passage of up to five words as a Front-Cover Text,
+and a passage of up to 25 words as a Back-Cover Text, to the end of the
+list of Cover Texts in the Modified Version.  Only one passage of
+Front-Cover Text and one of Back-Cover Text may be added by (or through
+arrangements made by) any one entity.  If the Document already includes
+a cover text for the same cover, previously added by you or by
+arrangement made by the same entity you are acting on behalf of, you may
+not add another; but you may replace the old one, on explicit permission
+from the previous publisher that added the old one.</para>
+
+<para>The author(s) and publisher(s) of the Document do not by this
+License give permission to use their names for publicity for or to
+assert or imply endorsement of any Modified Version.</para>
+</section>
+
+<section id="gfdl-5"><title>COMBINING DOCUMENTS</title>
+
+<para>You may combine the Document with other documents released under
+this License, under the terms defined in <link linkend="gfdl-4">section
+4</link> above for modified versions, provided that you include in the
+combination all of the Invariant Sections of all of the original
+documents, unmodified, and list them all as Invariant Sections of your
+combined work in its license notice, and that you preserve all their
+Warranty Disclaimers.</para>
+
+<para>The combined work need only contain one copy of this License, and
+multiple identical Invariant Sections may be replaced with a single
+copy.  If there are multiple Invariant Sections with the same name but
+different contents, make the title of each such section unique by adding
+at the end of it, in parentheses, the name of the original author or
+publisher of that section if known, or else a unique number.  Make the
+same adjustment to the section titles in the list of Invariant Sections
+in the license notice of the combined work.</para>
+
+<para>In the combination, you must combine any sections Entitled
+"History" in the various original documents, forming one section
+Entitled "History"; likewise combine any sections Entitled
+"Acknowledgements", and any sections Entitled "Dedications".  You must
+delete all sections Entitled "Endorsements".</para>
+</section>
+
+<section id="gfdl-6"><title>COLLECTIONS OF DOCUMENTS</title>
+
+<para>You may make a collection consisting of the Document and other
+documents released under this License, and replace the individual copies
+of this License in the various documents with a single copy that is
+included in the collection, provided that you follow the rules of this
+License for verbatim copying of each of the documents in all other
+respects.</para>
+
+<para>You may extract a single document from such a collection, and
+distribute it individually under this License, provided you insert a
+copy of this License into the extracted document, and follow this
+License in all other respects regarding verbatim copying of that
+document.</para>
+</section>
+
+<section id="gfdl-7"><title>AGGREGATION WITH INDEPENDENT WORKS</title>
+
+<para>A compilation of the Document or its derivatives with other
+separate and independent documents or works, in or on a volume of a
+storage or distribution medium, is called an "aggregate" if the
+copyright resulting from the compilation is not used to limit the legal
+rights of the compilation's users beyond what the individual works
+permit.  When the Document is included in an aggregate, this License does
+not apply to the other works in the aggregate which are not themselves
+derivative works of the Document.</para>
+
+<para>If the Cover Text requirement of section 3 is applicable to these
+copies of the Document, then if the Document is less than one half of
+the entire aggregate, the Document's Cover Texts may be placed on covers
+that bracket the Document within the aggregate, or the electronic
+equivalent of covers if the Document is in electronic form.  Otherwise
+they must appear on printed covers that bracket the whole
+aggregate.</para>
+</section>
+
+<section id="gfdl-8"><title>TRANSLATION</title>
+
+<para>Translation is considered a kind of modification, so you may
+distribute translations of the Document under the terms of section 4.
+Replacing Invariant Sections with translations requires special
+permission from their copyright holders, but you may include
+translations of some or all Invariant Sections in addition to the
+original versions of these Invariant Sections.  You may include a
+translation of this License, and all the license notices in the
+Document, and any Warranty Disclaimers, provided that you also include
+the original English version of this License and the original versions
+of those notices and disclaimers.  In case of a disagreement between the
+translation and the original version of this License or a notice or
+disclaimer, the original version will prevail.</para>
+
+<para>If a section in the Document is Entitled "Acknowledgements",
+"Dedications", or "History", the requirement (section 4) to Preserve its
+Title (section 1) will typically require changing the actual
+title.</para>
+</section>
+
+<section id="gfdl-9"><title>TERMINATION</title>
+
+<para>You may not copy, modify, sublicense, or distribute the Document
+except as expressly provided for under this License.  Any other attempt
+to copy, modify, sublicense or distribute the Document is void, and will
+automatically terminate your rights under this License.  However,
+parties who have received copies, or rights, from you under this License
+will not have their licenses terminated so long as such parties remain
+in full compliance.</para>
+</section>
+
+<section id="gfdl-10"><title>FUTURE REVISIONS OF THIS LICENSE</title>
+
+<para>The Free Software Foundation may publish new, revised versions of
+the GNU Free Documentation License from time to time.  Such new versions
+will be similar in spirit to the present version, but may differ in
+detail to address new problems or concerns.  See
+http://www.gnu.org/copyleft/.</para>
+
+<para>Each version of the License is given a distinguishing version
+number.  If the Document specifies that a particular numbered version of
+this License "or any later version" applies to it, you have the option
+of following the terms and conditions either of that specified version
+or of any later version that has been published (not as a draft) by the
+Free Software Foundation.  If the Document does not specify a version
+number of this License, you may choose any version ever published (not
+as a draft) by the Free Software Foundation.</para>
+</section>
+
+<section id="gfdl-addendum"><title>ADDENDUM: How to use this License for
+  your documents</title>
+
+<para>To use this License in a document you have written, include a copy
+of the License in the document and put the following copyright and
+license notices just after the title page:</para>
+
+<blockquote id="copyright-sample">
+  <title>Sample Invariant Sections list</title><para>
+    Copyright (c)  YEAR  YOUR NAME.
+    Permission is granted to copy, distribute and/or modify this document
+    under the terms of the GNU Free Documentation License, Version 1.2
+    or any later version published by the Free Software Foundation;
+    with no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.
+    A copy of the license is included in the section entitled "GNU
+    Free Documentation License".
+</para></blockquote>
+
+<para>If you have Invariant Sections, Front-Cover Texts and Back-Cover
+Texts, replace the "with...Texts." line with this:</para>
+
+<blockquote id="inv-cover-sample">
+  <title>Sample Invariant Sections list</title>
+<para>
+    with the Invariant Sections being LIST THEIR TITLES, with the
+    Front-Cover Texts being LIST, and with the Back-Cover Texts being LIST.
+</para></blockquote>
+
+<para>If you have Invariant Sections without Cover Texts, or some other
+combination of the three, merge those two alternatives to suit the
+situation.</para>
+
+<para>If your document contains nontrivial examples of program code, we
+recommend releasing these examples in parallel under your choice of free
+software license, such as the GNU General Public License, to permit
+their use in free software.</para>
+</section>
+</appendix>
+		
+</book>
